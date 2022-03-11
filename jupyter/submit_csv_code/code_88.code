@@ -1,0 +1,20 @@
+df = ds.month
+features = C.month_features
+x, x_val = df.loc[df.label != 'test', features], df.loc[df.label == 'test', features]
+y = df.loc[df.label != 'test', 'IS_FLAG']
+
+model = xgb.XGBClassifier(use_label_encoder=False)
+model.fit(x, y)
+y_pred = model.predict(x)
+print((y_pred != y).sum())
+from xgboost import plot_tree
+fig, ax = plt.subplots(figsize=(32, 16))
+plot_tree(model, ax=ax, rankdir='LR')
+
+
+y_val = model.predict(x_val).astype(int)
+pred = pd.DataFrame({'id': x_val.index.values, 'pred': y_val.astype(int)}).groupby('id').sum()
+pred = pred[pred.pred > 7]
+
+submit(pred.index.unique(), 'tsubmit_3_8_3.csv')
+inner = diff('submit_3_7_1.csv', 'tsubmit_3_8_3.csv')
