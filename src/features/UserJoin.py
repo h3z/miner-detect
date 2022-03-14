@@ -7,8 +7,18 @@ import pandas as pd
 import numpy as np
 import config as C
 import plotly.express as px
+from pathlib import Path
 
+def infot(target):
+    for i in Path('submit_csv').glob('3_10_base*.csv'):
+        cmp = load_ids(i.name)
+        print(i.name, target - cmp, len(target & cmp))
 
+def info(f):
+    print(f)
+    target = load_ids(f)
+    infot(target)
+    
 def plt_day(allids, df, cols=['pr2', 'pr3', 'pr4'], x='rq'):
     allids = list(allids)
     dct = {}
@@ -163,14 +173,17 @@ def diff(f1, f2):
     return s1, s2
 
 
-def submit(ids, f):
+def submit(ids, f, reallysubmit=False):
     res = []
     for id in UsersData(True).df.ID.values:
         res.append([id, int(id in ids)])
 
     df = pd.DataFrame(res, columns=['id', 'label'])
     print(df.label.sum())
-    df.to_csv(to_path(f), index=False)
+    if reallysubmit and f.startswith('submit'):
+        df.to_csv(to_path(f), index=False)
+    else:
+        df.to_csv(to_path(f if f.startswith('t') else 't' + f))
     return df
 
 
