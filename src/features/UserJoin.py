@@ -19,6 +19,7 @@ def info(f):
     target = load_ids(f)
     infot(target)
     
+
 def plt_day(allids, df, cols=['pr2', 'pr3', 'pr4'], x='rq'):
     allids = list(allids)
     dct = {}

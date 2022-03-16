@@ -5,3 +5,4 @@ models
 可能没什么用了
 *.zip
 nohup.out
+*.code
