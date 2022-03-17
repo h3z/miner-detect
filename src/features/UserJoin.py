@@ -9,16 +9,18 @@ import config as C
 import plotly.express as px
 from pathlib import Path
 
+
 def infot(target):
     for i in Path('submit_csv').glob('3_10_base*.csv'):
         cmp = load_ids(i.name)
         print(i.name, target - cmp, len(target & cmp))
 
+
 def info(f):
     print(f)
     target = load_ids(f)
     infot(target)
-    
+
 
 def plt_day(allids, df, cols=['pr2', 'pr3', 'pr4'], x='rq'):
     allids = list(allids)
@@ -153,9 +155,9 @@ def diff(f1, f2):
     s2 = set(d2[d2.label == 1].id.values)
 
     if 'backup' in f1:
-         f1 = f1.replace('backup', '') 
+        f1 = f1.replace('backup', '')
     if 'backup' in f2:
-         f2 = f2.replace('backup', '') 
+        f2 = f2.replace('backup', '')
 
     if f1 in dict:
         print(f'\n{f1}', dict[f1], end='')
@@ -325,6 +327,10 @@ class UserJoin():
         mean_1_2_diff.columns = [f'{i}_holiday_diff' for i in features]
         mean = self.day.groupby('id').mean()[features]
 
+        std1 = self.day[self.day.type == 0].groupby('id').std()[features]
+        std2 = self.day[self.day.type != 0].groupby('id').std()[features]
+
         return mean \
-            .join(mean1.join(mean2, lsuffix='_holiday_1', rsuffix='_holiday_0')) \
+            .join(mean1.join(mean2, lsuffix='_holiday_mean_1', rsuffix='_holiday_mean_0')) \
+            .join(std1.join(std2, lsuffix='_holiday_std_1', rsuffix='_holiday_std_0')) \
             .join(mean_1_2_diff)
