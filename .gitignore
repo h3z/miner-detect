@@ -6,3 +6,9 @@ models
 *.zip
 nohup.out
 *.code
+*.feather
+output
+output2
+
+####
+autoxgb.out
