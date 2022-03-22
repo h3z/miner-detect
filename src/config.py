@@ -23,6 +23,10 @@ test_daydata = test_dataset_root / "测试组_比特币挖矿_日用电明细（
 test_monthdata = test_dataset_root / "测试组_比特币挖矿_月用电明细（20211217）.csv"
 
 
+# ids_5_1 = {179558804, 1688684718, 2099471710, 2323237963, 2576316686}
+# ids_2_1 = {2323237963, 2576316686}
+
+
 true_ids = (
     {
         179458306,
@@ -41,6 +45,7 @@ true_ids = (
         2741872006,
         2817362052,
         2825175309,
+        
         2852503463,
         2533183958,
         2319973783,
@@ -56,6 +61,8 @@ true_ids = (
     | {1862376457}
     | {2540517219}
     | {2212577893}
+    | {179547052}
+    | {2323237963}
 )
 
 
@@ -404,26 +411,95 @@ month_features = [
 ]
 
 
-def daydata(submit):
+# def custom_aug(df):
+#     d = df[df.index.isin(minerids)]
+#     idmax = 2880712108
+
+#     newdfs = []
+#     for i in range(1, 50):
+#         newd = d.copy()
+#         newd = newd.reset_index()
+#         newd.id = newd.id + idmax * i
+#         newd = newd.set_index("id")
+#         newdfs.append(newd)
+
+#     res = pd.concat(newdfs + [df])
+#     print("after", res.shape)
+#     return res
+
+
+def custom_aug(d):
+    print("before", d.shape)
+    # idmax = d.index.max()
+    # train & test
+    idmax = 2880712108
+
+    scale = 2
+    features = {
+        "pq_f",
+        "pq_p",
+        "pq_g",
+        "pq_z",
+        "kwh_pap_r4",
+        "kwh_pap_r3",
+        "kwh_pap_r2",
+        "kwh_pap_r1",
+        "kwh",
+    }
+
+    features &= set(d.columns.values)
+    features = list(features)
+
+    p = d[features] / scale
+    newdfs = []
+    for idx, i in enumerate(range(int(-0.5 * scale), int(1 * scale))):
+        newd = d.copy()
+
+        # newd[features] = newd[features] + p * i
+        # newd[features] = newd[features]
+        newd = newd.reset_index()
+        newd.id = newd.id + idmax * (idx + 1)
+        newd = newd.set_index("id")
+
+        newdfs.append(newd)
+
+    res = pd.concat(newdfs + [d])
+    print("after", res.shape)
+    return res
+
+
+def daydata(submit, withaug):
     if submit:
         df = pd.read_csv(test_daydata)
     else:
         df = pd.read_csv(dataset_root / "day.csv")
         # df = pd.read_csv(dataset_root / 'day_fillna_0.csv')
+    df = df.set_index("id")
+    if withaug:
+        return custom_aug(df)
     return df
 
 
-def monthdata(submit):
+def monthdata(submit, withaug):
     if submit:
         df = pd.read_csv(test_monthdata)
     else:
         df = pd.read_csv(dataset_root / "month.csv")
+    df = df.set_index("id")
+    if withaug:
+        return custom_aug(df.fillna(0))
     return df.fillna(0)
 
 
-def usersdata(submit):
+def usersdata(submit, withaug):
     if submit:
         df = pd.read_csv(test_dataset_root / "testusers.csv")
     else:
         df = pd.read_csv(dataset_root / "users.csv")
+
+    df["id"] = df.ID
+    df = df.drop(columns=["ID"])
+    df = df.set_index("id")
+    if withaug:
+        return custom_aug(df.fillna(0))
     return df.fillna(0)

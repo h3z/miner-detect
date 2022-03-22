@@ -16,8 +16,8 @@ pq_z	总电量
 
 class MonthData:
 
-    def __init__(self, submit=False) -> None:
-        df = C.monthdata(submit)
+    def __init__(self, submit=False, with_aug=False) -> None:
+        df = C.monthdata(submit, with_aug)
         
         t = 0.05
         self.MIN = 0.33 - t

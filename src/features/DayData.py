@@ -13,8 +13,8 @@ kwh_pap_r4	昨日正向费率4电量
 '''
 
 class DayData:
-    def __init__(self, submit=False) -> None:
-        df = C.daydata(submit)
+    def __init__(self, submit=False, with_aug=False) -> None:
+        df = C.daydata(submit, with_aug)
         
         df.rq = pd.to_datetime(df.rq)
 
@@ -24,3 +24,4 @@ class DayData:
         df['pr3'] = np.abs(df.kwh_pap_r3 / (df.kwh_cal + 0.00000001))
         df['pr4'] = np.abs(df.kwh_pap_r4 / (df.kwh_cal + 0.00000001))
         self.df = df
+

@@ -245,7 +245,7 @@ def diff(f1, f2):
 
 def submit(ids, f, reallysubmit=False):
     res = []
-    for id in UsersData(True).df.ID.values:
+    for id in UsersData(True).df.index.values:
         res.append([id, int(id in ids)])
 
     df = pd.DataFrame(res, columns=["id", "label"])
@@ -258,14 +258,14 @@ def submit(ids, f, reallysubmit=False):
 
 
 class UserJoin:
-    def __init__(self) -> None:
-        user, usert = UsersData().df, UsersData(True).df
+    def __init__(self, with_aug=False) -> None:
+        user, usert = UsersData(False, with_aug).df, UsersData(True).df
         user["label"] = user["IS_FLAG"].astype("str")
         usert["label"] = "test"
         user = pd.concat([user, usert])
 
-        self.day = self.gen_day(user)
-        self.month = self.gen_month(user)
+        self.day = self.gen_day(user, with_aug)
+        self.month = self.gen_month(user, with_aug)
         self.day_mean = self.gen_day_mean()
         self.month_mean = self.gen_month_mean()
 
@@ -273,7 +273,7 @@ class UserJoin:
 
         # join to ds
         train = (
-            user.set_index("ID")[["ELEC_TYPE_NAME", "VOLT_NAME", "RUN_CAP", "label"]]
+            user[["ELEC_TYPE_NAME", "VOLT_NAME", "RUN_CAP", "label"]]
             .join(self.day_mean)
             .join(self.month_mean)
             .join(self.holiday_cv.reset_index().set_index("id"))
@@ -310,11 +310,9 @@ class UserJoin:
             & (df.pg > 0.333 - scale)
         ]
 
-    def gen_month(self, user):
-        month = (
-            pd.concat([MonthData().df, MonthData(True).df])
-            .set_index("id")
-            .join(user.set_index("ID"))
+    def gen_month(self, user, with_aug):
+        month = pd.concat([MonthData(False, with_aug).df, MonthData(True).df]).join(
+            user
         )
         month.index.name = "id"
 
@@ -347,12 +345,8 @@ class UserJoin:
             ]
         ]
 
-    def gen_day(self, user):
-        day = (
-            pd.concat([DayData().df, DayData(True).df])
-            .set_index("id")
-            .join(user.set_index("ID"))
-        )
+    def gen_day(self, user, with_aug):
+        day = pd.concat([DayData(False, with_aug).df, DayData(True).df]).join(user)
 
         day.index.name = "id"
 
